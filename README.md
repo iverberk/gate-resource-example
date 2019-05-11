@@ -8,7 +8,7 @@ An example pipeline for the [gate resource](https://github.com/Meshcloud/gate-re
 
 ## Gates
 
-This pipeline has the following gates: 
+This pipeline has the following gates:
 
 - `a-gate`: a simple gate
 - `b-gate`: anoter simple gate
@@ -25,4 +25,3 @@ This example pipeline has the following jobs. To see an example flow, trigger th
 - `push-autogate` generates an autoclose item in `auto-gate` that depends on the last two item that passed through `a-gate` and `b-gate` respectively
 - `autoclose-autogate` updates the autoclose items in `auto-gate`
 - `echo` triggers for every item passing through `auto-gate` and simply prints its contents
-
