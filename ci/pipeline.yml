@@ -5,19 +5,13 @@ resource_types:
     repository: meshcloud/gate-resource
 
 gate-source: &gate-source
-  git: 
-    uri: git@github.com:Meshcloud/gate-resource-example.git
-    private_key: ((github-key-readwrite))
-    branch: gates
+  git:
+    uri: git@github.com:iverberk/concourse-gates.git
+    private_key: |
+      DUMMY
+    branch: master
 
 resources:
-  - name: repo
-    type: git
-    source:
-      uri: git@github.com:Meshcloud/gate-resource-example.git
-      private_key: ((github-key-readwrite))
-      branch: master
-
   - name: a-gate
     type: gate-resource
     source:
@@ -39,33 +33,73 @@ resources:
 jobs:
   - name: push-a
     plan:
-    - get: repo
-    - task: gen
-      file: repo/ci/tasks/gen-simple.yml
+    - task: push-a
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: alpine
+            tag: "3.6"
+        outputs:
+        - name: gen
+        run:
+          path: sh
+          dir: gen
+          args:
+          - -exc
+          - |
+            echo "dummy" > "123456789012.v0.9.0"
     - put: a-gate
       params:
-        item_file: gen/*
-  
+        item_file: "gen/123456789012.v0.9.0"
+
   - name: push-b
     plan:
-    - get: repo
-    - task: gen
-      file: repo/ci/tasks/gen-simple.yml
+    - task: push-b
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: alpine
+            tag: "3.6"
+        outputs:
+        - name: gen
+        run:
+          path: sh
+          dir: gen
+          args:
+          - -exc
+          - |
+            echo "dummy" > "210987654321.v0.9.0"
     - put: b-gate
       params:
-        item_file: gen/*
-    
+        item_file: "gen/210987654321.v0.9.0"
+
   - name: push-autogate
     plan:
-    - get: repo
-    - aggregate:
-      - get: a-gate
-      - get: b-gate
-    - task: gen
-      file: repo/ci/tasks/gen-autoclose.yml
+    - task: push-autogate
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: alpine
+            tag: "3.6"
+        outputs:
+        - name: gen
+        run:
+          path: sh
+          dir: gen
+          args:
+          - -exc
+          - |
+            echo "a/123456789012.v0.9.0" >> "accounts.v0.9.0.autoclose"
+            echo "b/210987654321.v0.9.0" >> "accounts.v0.9.0.autoclose"
     - put: auto-gate
       params:
-        item_file: gen/*
+        item_file: gen/accounts.v0.9.0.autoclose
 
   - name: autoclose-autogate
     plan:
@@ -80,10 +114,28 @@ jobs:
 
   - name: echo
     plan:
-      - aggregate:
-        - get: repo
-        - get: auto-gate
-          trigger: true
-          version: every
+      - get: auto-gate
+        trigger: true
       - task: echo
-        file: repo/ci/tasks/echo.yml
+        config:
+          inputs:
+            - name: auto-gate
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: alpine
+              tag: "3.6"
+          run:
+            path: sh
+            args:
+            - -exc
+            - |
+              ls -la
+
+              if [ ! -f "auto-gate/passed" ]; then
+                echo "No passed file"
+                exit 0
+              fi
+
+              cat auto-gate/passed
