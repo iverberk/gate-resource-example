@@ -49,10 +49,10 @@ jobs:
           args:
           - -exc
           - |
-            echo "dummy" > "123456789012.v0.9.0"
+            echo "dummy" > "123456789012.v0.11.0"
     - put: a-gate
       params:
-        item_file: "gen/123456789012.v0.9.0"
+        item_file: "gen/123456789012.v0.11.0"
 
   - name: push-b
     plan:
@@ -72,10 +72,10 @@ jobs:
           args:
           - -exc
           - |
-            echo "dummy" > "210987654321.v0.9.0"
+            echo "dummy" > "210987654321.v0.11.0"
     - put: b-gate
       params:
-        item_file: "gen/210987654321.v0.9.0"
+        item_file: "gen/210987654321.v0.11.0"
 
   - name: push-autogate
     plan:
@@ -95,11 +95,11 @@ jobs:
           args:
           - -exc
           - |
-            echo "a/123456789012.v0.9.0" >> "accounts.v0.9.0.autoclose"
-            echo "b/210987654321.v0.9.0" >> "accounts.v0.9.0.autoclose"
+            echo "a/123456789012.v0.11.0" >> "accounts.v0.11.0.autoclose"
+            echo "b/210987654321.v0.11.0" >> "accounts.v0.11.0.autoclose"
     - put: auto-gate
       params:
-        item_file: gen/accounts.v0.9.0.autoclose
+        item_file: gen/accounts.v0.11.0.autoclose
 
   - name: autoclose-autogate
     plan:
